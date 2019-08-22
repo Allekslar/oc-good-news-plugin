@@ -42,11 +42,58 @@ class Plugin extends PluginBase
     }
 
     /**
+     * @return array
+     */
+    public function registerSettings()
+    {
+        return [
+            'goodnews-menu-main-settings' => [
+                'label'       => 'lovata.goodnews::lang.menu.main_settings',
+                'description' => 'lovata.goodnews::lang.menu.main_settings_description',
+                'category'    => 'lovata.goodnews::lang.tab.settings',
+                'icon'        => 'oc-icon-book',
+                'class'       => 'Lovata\GoodNews\Models\Settings',
+                'order'       => 100,
+                'permissions' => [
+                    'goodnews-settings',
+                ],
+            ],
+
+            'goodnews-menu-import-xml-file'   => [
+                'label'       => 'lovata.goodnews::lang.menu.import_xml_file',
+                'description' => 'lovata.goodnews::lang.menu.import_xml_file_description',
+                'category'    => 'lovata.goodnews::lang.tab.settings',
+                'icon'        => 'oc-icon-download',
+                'class'       => 'Lovata\GoodNews\Models\XmlImportSettings',
+                'order'       => 8000,
+                'permissions' => [
+                    'goodnews-menu-import-xml-file',
+                ],
+            ],
+        ];
+    }
+
+    /**
      * Add event listeners
      */
     protected function addEventListener()
     {
         Event::subscribe(ArticleModelHandler::class);
         Event::subscribe(CategoryModelHandler::class);
+    }
+
+        /**
+     * @return array
+     */
+    public function registerReportWidgets()
+    {
+        return [
+            'Lovata\GoodNews\Widgets\ImportFromXML' => [
+                'label' => 'lovata.goodnews::lang.widget.import_from_xml_files',
+            ],
+            'Lovata\GoodNews\Widgets\ImportFromCSV' => [
+                'label' => 'lovata.goodnews::lang.widget.import_from_csv_files',
+            ]
+        ];
     }
 }
