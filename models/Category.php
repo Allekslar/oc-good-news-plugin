@@ -1,16 +1,20 @@
 <?php namespace Lovata\GoodNews\Models;
 
 use Model;
+use Backend\Models\ImportModel;
 use October\Rain\Database\Traits\Validation;
 use October\Rain\Database\Traits\NestedTree;
+use October\Rain\Database\Traits\Sluggable;
 
 use Lovata\Toolbox\Traits\Helpers\TraitCached;
+use Lovata\Shopaholic\Classes\Import\ImportCategoryModelFromCSV;
 
 use Kharanenka\Helper\DataFileModel;
 use Kharanenka\Scope\ActiveField;
 use Kharanenka\Scope\NameField;
 use Kharanenka\Scope\SlugField;
 use Kharanenka\Scope\CodeField;
+use Kharanenka\Scope\ExternalIDField;
 
 /**
  * Class Category
@@ -42,7 +46,7 @@ use Kharanenka\Scope\CodeField;
  *
  * @method static \October\Rain\Database\Relations\HasMany|Category children()
  */
-class Category extends Model
+class Category extends ImportModel
 {
     use Validation;
     use NestedTree;
@@ -71,7 +75,8 @@ class Category extends Model
     protected $dates = ['created_at', 'updated_at'];
 
     public $attachOne = [
-        'preview_image' => 'System\Models\File'
+        'preview_image' => 'System\Models\File',
+        'import_file'   => [\System\Models\File::class, 'public' => false],
     ];
 
     public $attachMany = [
@@ -105,4 +110,33 @@ class Category extends Model
         'preview_image',
         'images',
     ];
+
+        /**
+     * Import item list from CSV file
+     * @param array $arElementList
+     * @param null  $sSessionKey
+     * @throws \Throwable
+     */
+    public function importData($arElementList, $sSessionKey = null)
+    {
+        if (empty($arElementList)) {
+            return;
+        }
+
+        $obImport = new ImportCategoryModelFromCSV();
+        $obImport->setDeactivateFlag();
+
+        foreach ($arElementList as $iKey => $arImportData) {
+            $obImport->import($arImportData);
+            $sResultMethod = $obImport->getResultMethod();
+            if (in_array($sResultMethod, ['logUpdated', 'logCreated'])) {
+                $this->$sResultMethod();
+            } else {
+                $sErrorMessage = $obImport->getResultError();
+                $this->$sResultMethod($iKey, $sErrorMessage);
+            }
+        }
+
+        $obImport->deactivateElements();
+    }
 }

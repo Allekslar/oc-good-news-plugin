@@ -11,6 +11,7 @@ use Kharanenka\Scope\DateField;
 use Kharanenka\Scope\SlugField;
 
 use Lovata\Toolbox\Traits\Helpers\TraitCached;
+use Lovata\GoodNews\Classes\Import\ImportArticleModelFromCSV;
 
 /**
  * Class Article
@@ -85,7 +86,8 @@ class Article extends Model
     ];
 
     public $attachOne = [
-        'preview_image' => 'System\Models\File'
+        'preview_image' => 'System\Models\File',
+        'import_file'   => [\System\Models\File::class, 'public' => false],
     ];
 
     public $attachMany = [
@@ -176,5 +178,34 @@ class Article extends Model
             self::STATUS_IN_WORK   => Lang::get('lovata.goodnews::lang.status.'.self::STATUS_IN_WORK),
             self::STATUS_PUBLISHED => Lang::get('lovata.goodnews::lang.status.'.self::STATUS_PUBLISHED),
         ];
+    }
+
+        /**
+     * Import item list from CSV file
+     * @param array $arElementList
+     * @param null  $sSessionKey
+     * @throws \Throwable
+     */
+    public function importData($arElementList, $sSessionKey = null)
+    {
+        if (empty($arElementList)) {
+            return;
+        }
+
+        $obImport = new ImportProductModelFromCSV();
+        $obImport->setDeactivateFlag();
+
+        foreach ($arElementList as $iKey => $arImportData) {
+            $obImport->import($arImportData);
+            $sResultMethod = $obImport->getResultMethod();
+            if (in_array($sResultMethod, ['logUpdated', 'logCreated'])) {
+                $this->$sResultMethod();
+            } else {
+                $sErrorMessage = $obImport->getResultError();
+                $this->$sResultMethod($iKey, $sErrorMessage);
+            }
+        }
+
+        $obImport->deactivateElements();
     }
 }
