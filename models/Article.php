@@ -2,6 +2,7 @@
 
 use Lang;
 use Model;
+use Backend\Models\ImportModel;
 use October\Rain\Argon\Argon;
 use October\Rain\Database\Traits\Validation;
 
@@ -46,7 +47,7 @@ use Lovata\GoodNews\Classes\Import\ImportArticleModelFromCSV;
  * @method static $this getPublished()
  *
  */
-class Article extends Model
+class Article extends ImportModel
 {
     use Validation;
     use DateField;
