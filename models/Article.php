@@ -150,6 +150,24 @@ class Article extends Model
         return $obQuery;
     }
 
+        /**
+     * Get element by categories
+     * @param article $obQuery
+     * @param string  $sData
+     * @return $this
+     */
+    public function scopeGetByCategories($obQuery, $sData)
+    {
+        if (!empty($sData)) {
+            foreach ($sData as $category) {
+                $obQuery->orWhere('category_id', $category)->orWhereHas('additional_category', function ($obQuery) use ($category) {
+                    $obQuery->where('category_id', $category);
+                });
+            }
+        }
+
+        return $obQuery;
+    }
     /**
      * Get published elements
      * @param \Illuminate\Database\Eloquent\Builder|\October\Rain\Database\Builder $obQuery

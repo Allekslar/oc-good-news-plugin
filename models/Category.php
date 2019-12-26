@@ -1,6 +1,7 @@
 <?php namespace Lovata\GoodNews\Models;
 
 use Model;
+use October\Rain\Database\Traits\Sluggable;
 use October\Rain\Database\Traits\Validation;
 use October\Rain\Database\Traits\NestedTree;
 
@@ -63,6 +64,7 @@ class Category extends Model
         'slug' => 'required|unique:lovata_good_news_categories',
     ];
 
+    public $slugs = ['slug' => 'name'];
     public $attributeNames = [
         'lovata.toolbox::lang.field.name',
         'lovata.toolbox::lang.field.slug',
@@ -105,4 +107,32 @@ class Category extends Model
         'preview_image',
         'images',
     ];
+
+    public $dates = ['created_at', 'updated_at'];
+    public $casts = [];
+
+    public $visible = [];
+    public $hidden = [];
+
+    /**
+     * Before validate event handler
+     */
+    public function beforeValidate()
+    {
+        if (empty($this->slug)) {
+            $this->slugAttributes();
+        }
+    }
+
+    /**
+     * Get by parent ID
+     * @param Category $obQuery
+     * @param string   $sData
+     * @return Category
+     */
+    public function scopeGetByParentID($obQuery, $sData)
+    {
+        return $obQuery->where('parent_id', $sData);
+    }
+
 }
