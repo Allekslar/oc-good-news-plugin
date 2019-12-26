@@ -108,7 +108,7 @@ class Category extends Model
         'images',
     ];
 
-    public $dates = ['created_at', 'updated_at'];
+    // public $dates = ['created_at', 'updated_at'];
     public $casts = [];
 
     public $visible = [];
